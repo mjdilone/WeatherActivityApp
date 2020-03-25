@@ -50,13 +50,21 @@
 				</dependency>
 		
 		<dependency>
-    <groupId>org.json</groupId>
-    <artifactId>json</artifactId>
-    <version>20190722</version>
-</dependency>
+    		<groupId>org.json</groupId>
+    		<artifactId>json</artifactId>
+    		<version>20190722</version>
+		</dependency>
+		
+
+
+		
+		
+	
+		
 		
 	</dependencies>
-
+	
+		
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -66,9 +74,33 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+		
+			<dependency>
+    <groupId>org.vaadin.addons</groupId>
+    <artifactId>animator</artifactId>
+    <version>1.6.5</version>
+    
+</dependency>
+	
+	<dependency>
+    	<groupId>com.github.appreciated</groupId>
+    	<artifactId>card</artifactId>
+    	<version>2.0.0.beta4</version>
+	</dependency>
+	
 		</dependencies>
 	</dependencyManagement>
-
+	
+	
+	<repositories>
+	<repository>
+   <id>vaadin-addons</id>
+   <url>https://maven.vaadin.com/vaadin-addons</url>
+</repository>
+	</repositories>
+	
+	
+	
 	<build>
 		<plugins>
 			<plugin>

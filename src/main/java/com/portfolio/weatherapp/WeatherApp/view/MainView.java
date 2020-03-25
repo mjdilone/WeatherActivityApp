@@ -1,17 +1,19 @@
 package com.portfolio.weatherapp.WeatherApp.view;
 
-import java.text.SimpleDateFormat;
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.portfolio.weatherapp.WeatherApp.controller.ActiveService;
+import com.portfolio.weatherapp.WeatherApp.controller.Utils;
 import com.portfolio.weatherapp.WeatherApp.controller.WeatherService;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.ClassResource;
 import com.vaadin.server.ExternalResource;
+import com.vaadin.server.FileResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
@@ -21,20 +23,29 @@ import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 @SpringUI(path = "")
+@StyleSheet("/styles.css")
 public class MainView extends UI{
-	
+	private static final long serialVersionUID = 1L;
+
 	@Autowired
 	private WeatherService weatherService;
 	
-	private boolean enabled = true;
+	@Autowired 
+	ActiveService activeService;
 	
+	private boolean enabled = true;
+	private boolean disabled = false;
+	
+	//weather elements
 	private Image iconImage;
+	private Image logoImage;
 	
 	private NativeSelect<String> unitSelect;
 	private TextField cityTextField;
@@ -51,94 +62,85 @@ public class MainView extends UI{
 	private Label sunriseLabel;
 	private Label sunsetLabel;
 	
+	//activity elements
+	private Button showActivityButton;
+	private HorizontalLayout activityLayout;
+	private Label activityLabel;
+	
+	//verticalLayout elements go up and down
 	private VerticalLayout mainLayout;
-	private HorizontalLayout dashBoardMain;
 	private VerticalLayout descriptionLayout;
-	private HorizontalLayout mainDescriptionLayout;
 	private VerticalLayout pressureLayout;
+	private VerticalLayout activityPromptLayout;
+
+	//horizontal elements go left to right
+	private HorizontalLayout dashBoardMain;
+	private HorizontalLayout mainDescriptionLayout;
 	private HorizontalLayout logoLayout;
 	
-	
+	//init starts up the page with empty elements and then a listener waits for input
 	@Override
 	protected void init(VaadinRequest request) {
 		
-		/************************** Working with JSON part 1**********************/
-//		Label label = new Label("Output");
-//		
-//		try {
-//			//this way you can just retrieve data from your JSON object based on mapped values
-//			System.out.println("Data: " + weatherService.getWeather("mumbai").get("coord").toString()); 
-//			
-//			try {
-//				JSONArray jsonArray = weatherService.returnWeatherArray("mumbai");
-//				for(int i = 0;i<jsonArray.length();i++) {
-//					JSONObject weatherObject = jsonArray.getJSONObject(i);
-//					System.out.println(
-//							"id : " + weatherObject.getInt("id") + 
-//							", main: " + weatherObject.getString("main") + 
-//							", description: " + weatherObject.getString("description")
-//					);
-//					
-//				}
-//			} catch (Exception e) {
-//			}
-//			
-//			//this is an example of returning data that belongs to a JSONObject
-//			//
-//			JSONObject mainObject = weatherService.returnMain("mumbai");
-//			System.out.println("pressure: " + mainObject.getLong("pressure"));
-//			System.out.println("temperature: " + mainObject.getInt("temp"));
-//			System.out.println("humidity " + mainObject.getInt("humidity"));
-//			
-//		} catch (JSONException e) {
-//			System.out.println("JSON isn't working");
-//		}
-//		setContent(label);
-		
-		
-		/***************************** Working with JSON part 2*******************/
-		
+		//sets up all widgets and componenets that will be used. In a way it creates nothing but insantiates the widgets
+		//This avoids an issue where some elements will be null before they can be added since they're instantiated in other code blocks
 		setUpLayout();
+		//Creates the header for the page then adds it to mainLayout
 		setHeader();
+		//creates the logo for the page using an internall image
 		setLogo();
+		//sets up the form that will recieve the info needed from the user
 		setUpForm();
+		//creates an empty invisible dashboard that will take in your results from the API
 		dashBoardTitle();
+		//adds empty containers for the dashboard, these will then be populated
 		dashBoardDescription();
 		
-		//display a notification if the  city search bar is empty
+		//this is a CLICK listener, so it's called with a click and then checks the value of cityTextField
 		showWeatherButton.addClickListener(event -> {
-			if(!cityTextField.getValue().equals("")) {
-				updateUI();
-
-			}else {
+			if(cityTextField.getValue().equals("")) {
 				Notification.show("Please enter a city");
+			}else {
+				//main logic of the page
+				updateWeatherUI();
 			}
 		});
 		
+		showActivityButton.addClickListener(event -> {
+			updateActivityUI();
+		});		
 	}
 	
-	//sets up all widgets and componenets that will be used. This avoids an issue where some elements will be null before they can be added since they're instantied in other code blocks
+	public MainView() {
+	}
+	
 	public void setUpLayout() {
-		
 		iconImage = new Image();
 		
+		//instantiating all the layouts of the page, they have to be instantiated here so that the results of the last page don't show for every new search
 		mainDescriptionLayout = new HorizontalLayout();
 		descriptionLayout = new VerticalLayout();
-		weatherDescription = new Label("Description : Clear Skies");
-		weatherMin = new Label("Min : 56F");
-		weatherMax = new Label("Max: 89F");
 		pressureLayout = new VerticalLayout();
-		pressureLabel = new Label("Pressure: 123pa");
-		humidityLabel = new Label("Humidity: 34");
-		windSpeedLabel = new Label("Wind Speed: 123/hr");
-		sunriseLabel = new Label("Sunrise: ");
-		sunsetLabel = new Label("Sunset");
+		activityPromptLayout = new VerticalLayout();
 
+		//weather
+		weatherDescription = new Label();
+		weatherMin = new Label();
+		weatherMax = new Label();
+		pressureLabel = new Label();
+		humidityLabel = new Label();
+		windSpeedLabel = new Label();
+		sunriseLabel = new Label();
+		sunsetLabel = new Label();
+		
+		//activity 
+		showActivityButton = new Button();
+		
+		//mainLayout 
 		mainLayout = new VerticalLayout();
 		mainLayout.setWidth("100%");//allows the layout to work with the entire screen
 		mainLayout.setSpacing(true);
 		mainLayout.setMargin(true);
-		
 		mainLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		
 		setContent(mainLayout);
@@ -146,62 +148,70 @@ public class MainView extends UI{
 	
 	public void setHeader() {
 		HorizontalLayout headerLayout = new HorizontalLayout();
-		
 		headerLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		
-		Label title = new Label("Weather!");
+		Label title = new Label("Enter your area");
 		
+		//adding prebuilt styling to the label called title
 		title.addStyleName(ValoTheme.LABEL_H1);
 		title.addStyleName(ValoTheme.LABEL_BOLD);
 		title.addStyleName(ValoTheme.LABEL_COLORED);
 		
+		//adding the title to the headerlayout, which is the surrounding container
 		headerLayout.addComponents(title);
+		
+		//add the headerLayout to the main layout
 		mainLayout.addComponents(headerLayout);
 	}
 	
 	private void setLogo() {
-		logoLayout = new HorizontalLayout();
-		
+		//icon:  /WeatherApp/src/main/resources/img/icons/77_Essential_Icons_Location Marker.png
+		//current WeatherApp/src/main/java/com/portfolio/weatherapp/WeatherApp/view/MainView.java
+		logoLayout = new HorizontalLayout();		
 		logoLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		
-		//Image icon = new Image(null,new ClassResource("/weather_icon.png"));
-		
-		//icon.setWidth("125px");
-		//icon.setHeight("125px");
-		
-		//logoLayout.addComponents(icon);
+		logoImage = new Image("",new FileResource(new File("src/main/resources/img/icons/77_Essential_Icons_Location Marker.png")));
+		logoLayout.addComponent(logoImage);
+		/*
+		 //create an embedded version of the image, passing null as it's caption
+		 iconImage.setSource(new ExternalResource("http://openweathermap.org/img/w/" + iconCode +  ".png"));
+		 */
+
 		mainLayout.addComponent(logoLayout);
 	}
 
 	private void setUpForm() {
 		HorizontalLayout formLayout = new HorizontalLayout();
-		
 		formLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		formLayout.setSpacing(enabled);
-		formLayout.setMargin(enabled);
+		//formLayout.setMargin(enabled);
 		
-		//create the selection component
+		//create the selection component that will allow you to pick between C and F
 		unitSelect = new NativeSelect<>();
-		unitSelect.setWidth("40px");
-		ArrayList<String> items = new ArrayList<>();
+		unitSelect.setWidth("30px");
 		
+		//creating an ordinary array list that holds the elements 
+		ArrayList<String> items = new ArrayList<>();
 		items.add("F");
 		items.add("C");
 		
+		//setting the arrayList as the thing that the unitSelect will hold
 		unitSelect.setItems(items);
 		unitSelect.setValue(items.get(0));
-		formLayout.addComponents(unitSelect);
+		
+		//finally, add it to the formLayout
+		formLayout.addComponent(unitSelect);
 		
 		//add textField
+		//creates a nice Vaadin text field
 		cityTextField = new TextField();
 		cityTextField.setWidth("40%");
 		formLayout.addComponents(cityTextField);
 		
-		//add Button
+		//add a Vaadin button to the form
 		showWeatherButton = new Button();
 		showWeatherButton.setIcon(VaadinIcons.SEARCH);
 		formLayout.addComponents(showWeatherButton);
-		
 		
 		mainLayout.addComponents(formLayout);
 	}
@@ -209,15 +219,14 @@ public class MainView extends UI{
 	private void dashBoardTitle() {
 		
 		dashBoardMain = new HorizontalLayout();
-		
 		dashBoardMain.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		
-		currentLocationTitle = new Label("Currently in Spokane");
+		currentLocationTitle = new Label();
 		currentLocationTitle.addStyleName(ValoTheme.LABEL_H2);
 		currentLocationTitle.addStyleName(ValoTheme.LABEL_LIGHT);
 		
 		//current temp label
-		currentTemp = new Label("19F");
+		currentTemp = new Label();
 		currentTemp.addStyleName(ValoTheme.LABEL_BOLD);
 		currentTemp.addStyleName(ValoTheme.LABEL_H1);
 		
@@ -226,23 +235,31 @@ public class MainView extends UI{
 	private void dashBoardDescription() {
 		mainDescriptionLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		
-		//Description Veritcal Layout
+		//Description Vertical Layout
 		descriptionLayout.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
 		descriptionLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+		//these values are still empty, but they are added to the description layout nonetheless
 		descriptionLayout.addComponents(weatherDescription);
 		descriptionLayout.addComponents(weatherMin);
 		descriptionLayout.addComponents(weatherMax);
 		
-		//Pressure humidity etc
+		//Pressure humidity etc, empty but added now
 		pressureLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		pressureLayout.addComponent(pressureLabel);
 		pressureLayout.addComponent(humidityLabel);
 		pressureLayout.addComponent(windSpeedLabel);
+		
 		pressureLayout.addComponent(sunriseLabel);
+		
 		pressureLayout.addComponent(sunsetLabel);
 	}
 
 	private void updateUI() {
+		
+	}
+	
+	private void updateWeatherUI(){
+
 		//sets the location title to what's been searched in the city search bar
 		currentLocationTitle.setValue("Currently in " + cityTextField.getValue());
 		
@@ -251,6 +268,7 @@ public class MainView extends UI{
 		String defaultUnit;
 		String unit;
 		
+		//setting up a string based on what option was picked in the unitSelect
 		if(unitSelect.getValue().equals("F")) {
 			defaultUnit = "imperial";
 			unitSelect.setValue("F");
@@ -261,25 +279,31 @@ public class MainView extends UI{
 			unit = "\u00b0" + "C";
 		}
 		
+		//setters for the weatherService, just setting up some values for the API request
 		weatherService.setCityName(city);
 		weatherService.setUnit(defaultUnit);
 		
 		try {
+			//calling the weather service 
 			mainObject = weatherService.returnMain();
 		} catch (Exception e) {
+			System.out.println("Weather Service has failed");
 			e.printStackTrace();
 		}
 		
+		//getting the temperature from the main object, specifically it goes into the JSON Object's array and looks for an Int with the name of "temp"
+		//the name of the element must exactly match the name from the JSON object, which is the response from the weather API
 		int temp = mainObject.getInt("temp");
+		//adding the value of the temp variable to the currentTemp label
 		currentTemp.setValue(temp + "F");
 		
-		//get min,max,pressure,humidity
+		//get min,max,pressure,humidity from the JSON object, just like with the temperature
 		double minTemp = mainObject.getDouble("temp_min");
 		double maxTemp = mainObject.getDouble("temp_max");
 		int pressure = mainObject.getInt("pressure");
 		int humidity = mainObject.getInt("humidity");
 		
-		//get wind speed
+		//get wind speed, which is a different JSON object from main
 		JSONObject windObject = weatherService.returnWind();
 		double wind = windObject.getDouble("speed");
 		
@@ -293,6 +317,7 @@ public class MainView extends UI{
 		String iconCode = null;
 		String description = null;
 		
+		//return a small array that contains some info about the weather
 		JSONArray jsonArray = weatherService.returnWeatherArray();
 		for(int i = 0;i<jsonArray.length();i++) {
 			JSONObject weatherObject = jsonArray.getJSONObject(i);
@@ -314,7 +339,7 @@ public class MainView extends UI{
 		dashBoardMain.addComponents(currentLocationTitle,iconImage,currentTemp);
 		mainLayout.addComponent(dashBoardMain);
 		
-		//update description UI
+		//takes all the information that's been gathered and applies them to all the empty labels that were made earlier
 		weatherDescription.setValue("Cloudiness: " +  description);
 		weatherDescription.addStyleName(ValoTheme.LABEL_SUCCESS);
 		weatherMin.setValue("Min: " + String.valueOf(minTemp));
@@ -322,31 +347,42 @@ public class MainView extends UI{
 		pressureLabel.setValue("Pressure: " + String.valueOf(pressure) + " hpa");
 		humidityLabel.setValue("Humidity: " + String.valueOf(humidity) + "%");
 		windSpeedLabel.setValue("Wind: " + String.valueOf(wind) + " m/s");
-		sunriseLabel.setValue("Sunrise: " + convertTime(sunrise));
-		sunsetLabel.setValue("Sunset: " + convertTime(sunset));
+		sunriseLabel.setValue("Sunrise: " + Utils.convertTime(sunrise));
 		
+		sunsetLabel.setValue("Sunset: " + Utils.convertTime(sunset));
+		
+		
+		//add the activity button
+		showActivityButton.setIcon(VaadinIcons.CAR);
+		activityPromptLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+		activityPromptLayout.addComponent(showActivityButton);
+		
+		//add the elements to the main container that holds descriptions
 		mainDescriptionLayout.addComponents(descriptionLayout,pressureLayout);
-		mainLayout.addComponents(mainDescriptionLayout);
+		//adds the description to the main container that holds anything
+		mainLayout.addComponents(mainDescriptionLayout,activityPromptLayout);
+		setFocusedComponent(showActivityButton);
+		//scrollIntoView(showActivityButton);
 	}
 	
-	private String convertTime(long time) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yy hh.mm aa");
+	private void updateActivityUI() {
+		JSONArray activityResultsJSONArray = new JSONArray();
+		try {
+			activityResultsJSONArray = activeService.fetchActivityList(cityTextField.getValue()).getJSONArray("results");
+			
+		} catch (Exception e) {
+			System.out.println("fetching the activity list has failed");
+			System.out.println(e.getMessage());
+		}
+
+		String testString = (activityResultsJSONArray.getJSONObject(0).getJSONArray("assetDescriptions").getJSONObject(0).get("description")).toString();
 		
-		return dateFormat.format(new Date(time));
+		Panel myPanel = new Panel(testString);
+		myPanel.setWidth("50%");
+		myPanel.setHeight("50%");
+		myPanel.setVisible(enabled);
+		activityPromptLayout.addComponent(myPanel);
+		
+		
 	}
-
-//	private void showDescription() {
-//		//description
-//		//min temp
-//		//max temp
-//		
-////		weatherDescription.setValue("Description: " + desc);
-//	}
-
-
-	
-
-
-
-
 }

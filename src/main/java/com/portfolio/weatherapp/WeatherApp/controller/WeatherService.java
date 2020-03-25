@@ -18,13 +18,10 @@ public class WeatherService {
 	private Response response;
 	
 	private String cityName;
-	
 	private String unit;
-	
 	
 	//the payload from using the weather api is a JSON object
 	public JSONObject getWeather() {
-		
 		client = new OkHttpClient();
 		//https://samples.openweathermap.org/data/2.5/find?q=London&units=imperial&appid=b6907d289e10d714a6e88b30761fae22
 		String callUrl = "http://api.openweathermap.org/data/2.5/weather?q=" + getCityName() + "&units=" + getUnit()  + "&appid=5775ef39fc4241a37080472d52bb9590";
@@ -38,7 +35,6 @@ public class WeatherService {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 		return null;
 	}
 	
@@ -50,7 +46,7 @@ public class WeatherService {
 	}
 	
 	public JSONObject returnMain() {
-		//here we are first getting the complete JSON object(which itself is an array of objecta) from the weather api
+		//here we are first getting the complete JSON object(which itself is an array of objects) from the weather api
 		//then we retrieve the element of that bigger array that has the name main
 		JSONObject mainObject = getWeather().getJSONObject("main");
 		
