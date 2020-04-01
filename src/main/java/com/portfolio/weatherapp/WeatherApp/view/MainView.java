@@ -4,33 +4,40 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.portfolio.weatherapp.WeatherApp.controller.ActiveService;
+import com.portfolio.weatherapp.WeatherApp.controller.Constants;
 import com.portfolio.weatherapp.WeatherApp.controller.Utils;
 import com.portfolio.weatherapp.WeatherApp.controller.WeatherService;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.icons.VaadinIcons;
+import com.vaadin.navigator.Navigator;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
+import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Layout;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 @SpringUI(path = "")
-@StyleSheet("/styles.css")
+@StyleSheet("vaadin://animate.css")
 public class MainView extends UI{
 	private static final long serialVersionUID = 1L;
 
@@ -42,6 +49,13 @@ public class MainView extends UI{
 	
 	private boolean enabled = true;
 	private boolean disabled = false;
+	
+	Navigator navigator;
+	
+	
+	private String slideInUp = "animated slideInUp";
+	private String slideInUpSlow = "animated slideInUp";
+	private String slideOutUp = "animated slideOutUp";
 	
 	//weather elements
 	private Image iconImage;
@@ -74,14 +88,30 @@ public class MainView extends UI{
 	private VerticalLayout activityPromptLayout;
 
 	//horizontal elements go left to right
+	private HorizontalLayout formLayout;
+	private HorizontalLayout headerLayout;
+	private HorizontalLayout logoLayout;
+	private VerticalLayout topLayout;
+
 	private HorizontalLayout dashBoardMain;
 	private HorizontalLayout mainDescriptionLayout;
-	private HorizontalLayout logoLayout;
+	
+	private HorizontalLayout activityDisplayLayout;
 	
 	//init starts up the page with empty elements and then a listener waits for input
 	@Override
 	protected void init(VaadinRequest request) {
 		
+		//testing
+		// menu toggle
+		
+		//end testing
+		
+		topLayout = new VerticalLayout();
+		topLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+		
+		
+	
 		//sets up all widgets and componenets that will be used. In a way it creates nothing but insantiates the widgets
 		//This avoids an issue where some elements will be null before they can be added since they're instantiated in other code blocks
 		setUpLayout();
@@ -95,19 +125,45 @@ public class MainView extends UI{
 		dashBoardTitle();
 		//adds empty containers for the dashboard, these will then be populated
 		dashBoardDescription();
+	
+		topLayout.setStyleName("animated slideInUp");
+		dashBoardMain.setStyleName("animated slideInUp");
+		mainDescriptionLayout.setStyleName("animated slideInUp");
+		showActivityButton.setStyleName(slideInUp);
+		
+		//testing
+//		mainLayout.setHeight("98%");
+		
+		
+		
+		//end testing
 		
 		//this is a CLICK listener, so it's called with a click and then checks the value of cityTextField
-		showWeatherButton.addClickListener(event -> {
-			if(cityTextField.getValue().equals("")) {
-				Notification.show("Please enter a city");
-			}else {
-				//main logic of the page
-				updateWeatherUI();
-			}
+		showWeatherButton.addClickListener(event0 -> {
+			topLayout.setStyleName(slideOutUp);
+			
+			refreshUI();
 		});
 		
+		showWeatherButton.addClickListener(event1 -> {
+			if(cityTextField.getValue().equals("") ) {
+				//Notification.show("Please enter a city");
+				cityTextField.setValue(Constants.testWeatherCityInput);
+			}else {
+					mainLayout.removeComponent(topLayout);
+//					mainLayout.removeComponent(headerLayout);
+//					mainLayout.setHeight(Double.toString(Page.getCurrent().getBrowserWindowHeight() * .5));
+//					mainLayout.setSpacing(disabled);
+					mainLayout.setSizeFull();
+//					mainLayout.setStyleName("animated noscroll");
+					updateUI();
+			}
+		});
+	
 		showActivityButton.addClickListener(event -> {
 			updateActivityUI();
+		    mainLayout.setExpandRatio(activityDisplayLayout,1.0f);
+			
 		});		
 	}
 	
@@ -122,6 +178,7 @@ public class MainView extends UI{
 		descriptionLayout = new VerticalLayout();
 		pressureLayout = new VerticalLayout();
 		activityPromptLayout = new VerticalLayout();
+		
 
 		//weather
 		weatherDescription = new Label();
@@ -136,21 +193,21 @@ public class MainView extends UI{
 		//activity 
 		showActivityButton = new Button();
 		
+		
 		//mainLayout 
 		mainLayout = new VerticalLayout();
 		mainLayout.setWidth("100%");//allows the layout to work with the entire screen
 		mainLayout.setSpacing(true);
 		mainLayout.setMargin(true);
 		mainLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
-		
 		setContent(mainLayout);
 	}
 	
 	public void setHeader() {
-		HorizontalLayout headerLayout = new HorizontalLayout();
+		headerLayout = new HorizontalLayout();
 		headerLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		
-		Label title = new Label("Enter your area");
+		Label title = new Label("Weather");
 		
 		//adding prebuilt styling to the label called title
 		title.addStyleName(ValoTheme.LABEL_H1);
@@ -161,27 +218,23 @@ public class MainView extends UI{
 		headerLayout.addComponents(title);
 		
 		//add the headerLayout to the main layout
-		mainLayout.addComponents(headerLayout);
+		topLayout.addComponent(headerLayout);
+		mainLayout.addComponents(topLayout);
 	}
 	
 	private void setLogo() {
-		//icon:  /WeatherApp/src/main/resources/img/icons/77_Essential_Icons_Location Marker.png
-		//current WeatherApp/src/main/java/com/portfolio/weatherapp/WeatherApp/view/MainView.java
 		logoLayout = new HorizontalLayout();		
 		logoLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		
 		logoImage = new Image("",new FileResource(new File("src/main/resources/img/icons/77_Essential_Icons_Location Marker.png")));
 		logoLayout.addComponent(logoImage);
-		/*
-		 //create an embedded version of the image, passing null as it's caption
-		 iconImage.setSource(new ExternalResource("http://openweathermap.org/img/w/" + iconCode +  ".png"));
-		 */
 
-		mainLayout.addComponent(logoLayout);
+		topLayout.addComponent(logoLayout);
+		mainLayout.addComponent(topLayout);
 	}
 
 	private void setUpForm() {
-		HorizontalLayout formLayout = new HorizontalLayout();
+		formLayout = new HorizontalLayout();
 		formLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		formLayout.setSpacing(enabled);
 		//formLayout.setMargin(enabled);
@@ -213,7 +266,8 @@ public class MainView extends UI{
 		showWeatherButton.setIcon(VaadinIcons.SEARCH);
 		formLayout.addComponents(showWeatherButton);
 		
-		mainLayout.addComponents(formLayout);
+		topLayout.addComponent(formLayout);
+		mainLayout.addComponents(topLayout);
 	}
 	
 	private void dashBoardTitle() {
@@ -248,29 +302,48 @@ public class MainView extends UI{
 		pressureLayout.addComponent(pressureLabel);
 		pressureLayout.addComponent(humidityLabel);
 		pressureLayout.addComponent(windSpeedLabel);
-		
 		pressureLayout.addComponent(sunriseLabel);
-		
 		pressureLayout.addComponent(sunsetLabel);
 	}
 
 	private void updateUI() {
+		refreshUI();
+		updateWeatherUI();
 		
+		
+		//handmade timer
+//		Long currentTime = System.currentTimeMillis();
+//		Long endTime = currentTime + 2000;
+//		while(System.currentTimeMillis() <= endTime) {
+//		}
 	}
 	
-	private void updateWeatherUI(){
+	
+	private void refreshUI() {
+		Page.getCurrent();
+	}
 
+	private void updateWeatherUI(){
 		//sets the location title to what's been searched in the city search bar
-		currentLocationTitle.setValue("Currently in " + cityTextField.getValue());
+		currentLocationTitle.setValue("Currently in " + cityTextField.getValue() + ":");
 		
+//		try {
+//		    TimeUnit.SECONDS.sleep(1);
+//		} catch (InterruptedException ie) {
+//		    Thread.currentThread().interrupt();
+//		}
+		
+
+
 		JSONObject mainObject = new JSONObject();
 		String city = cityTextField.getValue();
 		String defaultUnit;
 		String unit;
+	
 		
 		//setting up a string based on what option was picked in the unitSelect
 		if(unitSelect.getValue().equals("F")) {
-			defaultUnit = "imperial";
+			defaultUnit = "imperial";	
 			unitSelect.setValue("F");
 			unit = "\u00b0" + "F";
 		}else {
@@ -351,7 +424,6 @@ public class MainView extends UI{
 		
 		sunsetLabel.setValue("Sunset: " + Utils.convertTime(sunset));
 		
-		
 		//add the activity button
 		showActivityButton.setIcon(VaadinIcons.CAR);
 		activityPromptLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
@@ -361,28 +433,111 @@ public class MainView extends UI{
 		mainDescriptionLayout.addComponents(descriptionLayout,pressureLayout);
 		//adds the description to the main container that holds anything
 		mainLayout.addComponents(mainDescriptionLayout,activityPromptLayout);
-		setFocusedComponent(showActivityButton);
-		//scrollIntoView(showActivityButton);
 	}
 	
 	private void updateActivityUI() {
-		JSONArray activityResultsJSONArray = new JSONArray();
-		try {
-			activityResultsJSONArray = activeService.fetchActivityList(cityTextField.getValue()).getJSONArray("results");
-			
-		} catch (Exception e) {
-			System.out.println("fetching the activity list has failed");
-			System.out.println(e.getMessage());
-		}
+	    
+	    //testing
+	    mainLayout.removeComponent(mainDescriptionLayout);
+//	    mainDescriptionLayout.setVisible(disabled);
+	    //end testing
+	    
+	    JSONArray activityResultsJSONArray = new JSONArray();
+	    try {
+	      int resultSize = Integer.parseInt(activeService.fetchActivityList(cityTextField.getValue()).get("total_results").toString());
+	      System.out.println("Result Size: " + resultSize);
+	      activityResultsJSONArray = activeService.fetchActivityList(cityTextField.getValue()).getJSONArray("results");
+	    } catch (Exception e) {
+	      System.out.println("fetching the activity list has failed");
+	      System.out.println(e.getMessage());
+	    }
 
-		String testString = (activityResultsJSONArray.getJSONObject(0).getJSONArray("assetDescriptions").getJSONObject(0).get("description")).toString();
-		
-		Panel myPanel = new Panel(testString);
-		myPanel.setWidth("50%");
-		myPanel.setHeight("50%");
-		myPanel.setVisible(enabled);
-		activityPromptLayout.addComponent(myPanel);
-		
-		
-	}
+	    String activityDescription = null;
+	    String activityURL = null;
+	    String activityLocation = null;
+	    String activityStartDate = null;
+	    String activityLogoImageURL = null;
+	    String activityName = null;
+	    ArrayList<String> list = new ArrayList<>();
+	    
+	    try {
+	      activityDescription = (activityResultsJSONArray.getJSONObject(0).getJSONArray("assetDescriptions").getJSONObject(0).get("description")).toString();
+	      activityURL = (activityResultsJSONArray.getJSONObject(0).get("homePageUrlAdr")).toString();
+	      activityLocation = (activityResultsJSONArray.getJSONObject(0).getJSONObject("place")).get("addressLine1Txt").toString();
+	      activityStartDate = (activityResultsJSONArray.getJSONObject(0).get("activityStartDate")).toString();
+	      activityLogoImageURL = (activityResultsJSONArray.getJSONObject(0).get("logoUrlAdr")).toString();
+	      activityName = ((activityResultsJSONArray.getJSONObject(0).get("assetName").toString()));
+	      list.add(activityDescription);
+	      list.add(activityURL);
+	      list.add(activityLocation);
+	      list.add(activityStartDate);
+	      list.add(activityLogoImageURL);
+	      list.add(activityName);
+	      Utils.printAll(list);
+	      
+	    } catch (JSONException e) {
+	      e.printStackTrace();
+	    }
+	    
+	    //testing
+	    activityDisplayLayout = new HorizontalLayout();
+	    activityDisplayLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+	    //end testing
+	    
+	    Panel activityInfoPanel = new Panel(activityDescription);
+	    Panel activityInfoPanel1 = new Panel(Utils.lorem);
+	    Panel activityInfoPanel2 = new Panel(Utils.lorem);
+	    
+	    //test panel, try adding a textfield
+	    Label testLabel = new Label(activityDescription,ContentMode.HTML);
+//	    testLabel.setSizeUndefined();
+	    testLabel.setWidth("1000px");
+//	    testLabel.setHeight("300px");
+//	    testLabel.setValue(activityDescription);
+	   
+	    
+	    //testing Panel that holds a layout, the layout itself is then scrollable
+	    VerticalLayout testLayout = new VerticalLayout();
+	    testLayout.addComponent(testLabel);
+	    Panel testPanel2 = new Panel();
+	    testPanel2.setHeight("250px");
+	    System.out.println(Page.getCurrent().getBrowserWindowWidth());
+	    double browserPageWidth = Page.getCurrent().getBrowserWindowWidth();
+	    String panelWidth = Double.toString(browserPageWidth * .92);
+	    testPanel2.setWidth(panelWidth);
+	    
+	    testPanel2.setCaption("test2");
+	    testPanel2.setContent(testLayout);
+	    
+	    //end testPanel
+	    
+	    //testing
+	    ArrayList<Panel> panelList = new ArrayList<Panel>();
+	    panelList.add(activityInfoPanel);
+	    panelList.add(activityInfoPanel1);
+	    panelList.add(activityInfoPanel2);
+	    panelList.add(testPanel2);
+	    
+	    //testing
+	    TabSheet tabsheet = new TabSheet();
+	    tabsheet.addStyleName(ValoTheme.TABSHEET_EQUAL_WIDTH_TABS );
+	    int tabCounter = 0;
+	    
+	    for(Panel panel :panelList) {
+	      panel.addStyleName("animated slideInRight ");
+//	      panel.setWidth("100%");
+//	      panel.setHeight("100%");
+	      VerticalLayout tabToAdd = new VerticalLayout(panel);
+	      tabToAdd.setCaption("tab " + tabCounter++);
+	      tabsheet.addTab(tabToAdd);
+	    }
+
+	    activityDisplayLayout.addComponent(tabsheet);
+	    //end testing
+
+	    activityDisplayLayout.setVisible(enabled);
+	    mainLayout.addComponent(activityDisplayLayout);
+	    //add a class to a component as if it were an HTML element
+	    activityInfoPanel.addStyleName("animated slideInRight");
+	  }
 }

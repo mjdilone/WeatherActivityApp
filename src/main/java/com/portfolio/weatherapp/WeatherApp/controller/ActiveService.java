@@ -22,7 +22,6 @@ public class ActiveService {
 	private Response response;
 	
 	private String data;
-	
 	//activity arguments
 	//type of activity, such as running or swimming
 	private String type;
@@ -34,12 +33,7 @@ public class ActiveService {
 	private String nearArea;
 	//search radius
 	private int radius;
-	
-	public String getCurrentDate() {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Date date = new Date();
-		return dateFormat.format(date);
-	}
+
 	
 	//retrieves a list of activities as a  JSON object
 	public JSONObject fetchActivityList(String city) {
@@ -49,12 +43,11 @@ public class ActiveService {
 		getCurrentDate() + 
 		"..&near=" + 
 		city + 
-		"&radius=25&api_key=" + 
+		"&radius=15&api_key=" + 
 		Constants.activityAPIKey;
 		
 		log.info("Activity API URL " + callUrl);
 		System.out.println(callUrl);
-		
 		Request request = new Request.Builder().url(callUrl).build();
 		
 		try {
@@ -66,12 +59,11 @@ public class ActiveService {
 		return null;
 	}
 	
-//	public JSONArray returnActivityArray() {
-//		//when a page returns JSON it might return an array of JSON objects or even a two dimensional JSON array
-//		JSONArray activityJSONArray = fetchActivityList().getJSONArray("results");
-//		
-//		return activityJSONArray;
-//	}
+	public String getCurrentDate() {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Date date = new Date();
+		return dateFormat.format(date);
+	}
 	
 	public static Logger getLog() {
 		return log;
