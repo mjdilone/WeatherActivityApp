@@ -21,6 +21,12 @@ html{
 
 }
 
+.wallpaper{
+	background: cyan;
+}
+
+
+
 .noscroll{
 	overflow:hidden !important;
 }

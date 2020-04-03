@@ -126,6 +126,9 @@ public class MainView extends UI{
 		dashBoardMain.setStyleName("animated slideInUp");
 		mainDescriptionLayout.setStyleName("animated slideInUp");
 		showActivityButton.setStyleName(slideInUp);
+		
+		mainLayout.addStyleName("animated wallpaper");
+		mainLayout.setSizeFull();
 
 		//binds the click listener to the enter button
 		showWeatherButton.setClickShortcut(KeyCode.ENTER);
@@ -141,7 +144,7 @@ public class MainView extends UI{
 				cityTextField.setValue(Constants.testWeatherCityInput);
 			}else {
 					mainLayout.removeComponent(topLayout);
-					mainLayout.setSizeFull();
+//					mainLayout.setSizeFull();
 					updateUI();
 			}
 		});
