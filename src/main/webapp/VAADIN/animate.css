@@ -17,15 +17,17 @@
 
 html{
 	  scroll-behavior: smooth;
-	  
-
-}
-
-.wallpaper{
-	background: cyan;
 }
 
 
+.wallpaper {
+	background: url(cssImages/pretty-lake.jpg) cyan;
+	
+}
+
+.bold{
+	color:black  !important;
+}
 
 .noscroll{
 	overflow:hidden !important;

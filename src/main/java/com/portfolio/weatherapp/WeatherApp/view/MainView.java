@@ -14,6 +14,7 @@ import com.portfolio.weatherapp.WeatherApp.controller.Utils;
 import com.portfolio.weatherapp.WeatherApp.controller.WeatherService;
 import com.portfolio.weatherapp.WeatherApp.model.Activity;
 import com.vaadin.annotations.StyleSheet;
+import com.vaadin.annotations.Theme;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.Navigator;
@@ -25,6 +26,7 @@ import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
@@ -107,7 +109,8 @@ public class MainView extends UI{
 	protected void init(VaadinRequest request) {
 		topLayout = new VerticalLayout();
 		topLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
-	
+
+		
 		//sets up all widgets and componenets that will be used. In a way it creates nothing in the UI, but insantiates the widgets
 		//This avoids an issue where some elements will be null before they can be added since they're instantiated in other methodsh
 		setUpLayout();
@@ -122,14 +125,20 @@ public class MainView extends UI{
 		//adds empty containers for the dashboard, these will then be populated
 		dashBoardDescription();
 	
+
 		topLayout.setStyleName("animated slideInUp");
 		dashBoardMain.setStyleName("animated slideInUp");
 		mainDescriptionLayout.setStyleName("animated slideInUp");
 		showActivityButton.setStyleName(slideInUp);
 		
-		mainLayout.addStyleName("animated wallpaper");
+		mainLayout.setStyleName("animated wallpaper ");		
 		mainLayout.setSizeFull();
 
+		
+		//testing adding bold to all elements
+		
+		//end testing
+		
 		//binds the click listener to the enter button
 		showWeatherButton.setClickShortcut(KeyCode.ENTER);
 		//this is a CLICK listener, so it's called with a click and then checks the value of cityTextField
@@ -312,6 +321,7 @@ public class MainView extends UI{
 	private void updateWeatherUI(){
 		//sets the location title to what's been searched in the city search bar
 		currentLocationTitle.setValue("Currently in " + cityTextField.getValue() + ":");
+		currentLocationTitle.addStyleName("animated bold");
 
 		JSONObject mainObject = new JSONObject();
 		String city = cityTextField.getValue();
@@ -391,13 +401,21 @@ public class MainView extends UI{
 		
 		//takes all the information that's been gathered and applies them to all the empty labels that were made earlier
 		weatherDescription.setValue("Cloudiness: " +  description);
+		weatherDescription.setStyleName("animated bold");
 		weatherMin.setValue("Min: " + String.valueOf(minTemp));
+		weatherMin.setStyleName("animated bold");
 		weatherMax.setValue("Max: " + String.valueOf(maxTemp));
+		weatherMax.setStyleName("animated bold");
 		pressureLabel.setValue("Pressure: " + String.valueOf(pressure) + " hpa");
+		pressureLabel.setStyleName("animated bold");
 		humidityLabel.setValue("Humidity: " + String.valueOf(humidity) + "%");
+		humidityLabel.addStyleName("animated bold");
 		windSpeedLabel.setValue("Wind: " + String.valueOf(wind) + " m/s");
+		windSpeedLabel.addStyleName("animated bold");
 		sunriseLabel.setValue("Sunrise: " + Utils.convertTime(sunrise));
+		sunriseLabel.addStyleName("animated bold");
 		sunsetLabel.setValue("Sunset: " + Utils.convertTime(sunset));
+		sunsetLabel.addStyleName("animated bold");
 		
 		//add the activity button
 		showActivityButton.setIcon(VaadinIcons.CAR);
