@@ -12,7 +12,9 @@ import com.portfolio.weatherapp.WeatherApp.controller.ActiveService;
 import com.portfolio.weatherapp.WeatherApp.controller.Constants;
 import com.portfolio.weatherapp.WeatherApp.controller.Utils;
 import com.portfolio.weatherapp.WeatherApp.controller.WeatherService;
+import com.portfolio.weatherapp.WeatherApp.model.Activity;
 import com.vaadin.annotations.StyleSheet;
+import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.ExternalResource;
@@ -26,9 +28,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Layout;
 import com.vaadin.ui.NativeSelect;
-import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextField;
@@ -50,8 +50,7 @@ public class MainView extends UI{
 	private boolean enabled = true;
 	private boolean disabled = false;
 	
-	Navigator navigator;
-	
+//	Navigator navigator;
 	
 	private String slideInUp = "animated slideInUp";
 	private String slideInUpSlow = "animated slideInUp";
@@ -97,27 +96,24 @@ public class MainView extends UI{
 	private HorizontalLayout mainDescriptionLayout;
 	
 	private HorizontalLayout activityDisplayLayout;
+	private TabSheet activityTabSheet;
+	private VerticalLayout activityTabSheetLayout;
+	private VerticalLayout tab;
+	private Panel activityPanel;
+//	private Label activityLabel;
 	
 	//init starts up the page with empty elements and then a listener waits for input
 	@Override
 	protected void init(VaadinRequest request) {
-		
-		//testing
-		// menu toggle
-		
-		//end testing
-		
 		topLayout = new VerticalLayout();
 		topLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
-		
-		
 	
-		//sets up all widgets and componenets that will be used. In a way it creates nothing but insantiates the widgets
-		//This avoids an issue where some elements will be null before they can be added since they're instantiated in other code blocks
+		//sets up all widgets and componenets that will be used. In a way it creates nothing in the UI, but insantiates the widgets
+		//This avoids an issue where some elements will be null before they can be added since they're instantiated in other methodsh
 		setUpLayout();
 		//Creates the header for the page then adds it to mainLayout
 		setHeader();
-		//creates the logo for the page using an internall image
+		//creates the logo for the page using an internal image
 		setLogo();
 		//sets up the form that will recieve the info needed from the user
 		setUpForm();
@@ -130,18 +126,12 @@ public class MainView extends UI{
 		dashBoardMain.setStyleName("animated slideInUp");
 		mainDescriptionLayout.setStyleName("animated slideInUp");
 		showActivityButton.setStyleName(slideInUp);
-		
-		//testing
-//		mainLayout.setHeight("98%");
-		
-		
-		
-		//end testing
-		
+
+		//binds the click listener to the enter button
+		showWeatherButton.setClickShortcut(KeyCode.ENTER);
 		//this is a CLICK listener, so it's called with a click and then checks the value of cityTextField
 		showWeatherButton.addClickListener(event0 -> {
 			topLayout.setStyleName(slideOutUp);
-			
 			refreshUI();
 		});
 		
@@ -151,16 +141,13 @@ public class MainView extends UI{
 				cityTextField.setValue(Constants.testWeatherCityInput);
 			}else {
 					mainLayout.removeComponent(topLayout);
-//					mainLayout.removeComponent(headerLayout);
-//					mainLayout.setHeight(Double.toString(Page.getCurrent().getBrowserWindowHeight() * .5));
-//					mainLayout.setSpacing(disabled);
 					mainLayout.setSizeFull();
-//					mainLayout.setStyleName("animated noscroll");
 					updateUI();
 			}
 		});
 	
 		showActivityButton.addClickListener(event -> {
+//			activityTabSheet = new TabSheet();
 			updateActivityUI();
 		    mainLayout.setExpandRatio(activityDisplayLayout,1.0f);
 			
@@ -178,7 +165,6 @@ public class MainView extends UI{
 		descriptionLayout = new VerticalLayout();
 		pressureLayout = new VerticalLayout();
 		activityPromptLayout = new VerticalLayout();
-		
 
 		//weather
 		weatherDescription = new Label();
@@ -192,7 +178,8 @@ public class MainView extends UI{
 		
 		//activity 
 		showActivityButton = new Button();
-		
+	    activityDisplayLayout = new HorizontalLayout();
+	    activityTabSheet = new TabSheet();
 		
 		//mainLayout 
 		mainLayout = new VerticalLayout();
@@ -268,6 +255,9 @@ public class MainView extends UI{
 		
 		topLayout.addComponent(formLayout);
 		mainLayout.addComponents(topLayout);
+		
+		
+
 	}
 	
 	private void dashBoardTitle() {
@@ -309,37 +299,21 @@ public class MainView extends UI{
 	private void updateUI() {
 		refreshUI();
 		updateWeatherUI();
-		
-		
-		//handmade timer
-//		Long currentTime = System.currentTimeMillis();
-//		Long endTime = currentTime + 2000;
-//		while(System.currentTimeMillis() <= endTime) {
-//		}
 	}
 	
 	
 	private void refreshUI() {
-		Page.getCurrent();
+		//empty for now
 	}
 
 	private void updateWeatherUI(){
 		//sets the location title to what's been searched in the city search bar
 		currentLocationTitle.setValue("Currently in " + cityTextField.getValue() + ":");
-		
-//		try {
-//		    TimeUnit.SECONDS.sleep(1);
-//		} catch (InterruptedException ie) {
-//		    Thread.currentThread().interrupt();
-//		}
-		
-
 
 		JSONObject mainObject = new JSONObject();
 		String city = cityTextField.getValue();
 		String defaultUnit;
 		String unit;
-	
 		
 		//setting up a string based on what option was picked in the unitSelect
 		if(unitSelect.getValue().equals("F")) {
@@ -398,7 +372,7 @@ public class MainView extends UI{
 			iconCode = weatherObject.getString("icon");
 			description = weatherObject.getString("description");
 			
-			//print for testing
+			//print weather details
 			System.out.println(
 					"id : " + weatherObject.getInt("id") + 
 					", main: " + weatherObject.getString("main") + 
@@ -414,19 +388,19 @@ public class MainView extends UI{
 		
 		//takes all the information that's been gathered and applies them to all the empty labels that were made earlier
 		weatherDescription.setValue("Cloudiness: " +  description);
-		weatherDescription.addStyleName(ValoTheme.LABEL_SUCCESS);
 		weatherMin.setValue("Min: " + String.valueOf(minTemp));
 		weatherMax.setValue("Max: " + String.valueOf(maxTemp));
 		pressureLabel.setValue("Pressure: " + String.valueOf(pressure) + " hpa");
 		humidityLabel.setValue("Humidity: " + String.valueOf(humidity) + "%");
 		windSpeedLabel.setValue("Wind: " + String.valueOf(wind) + " m/s");
 		sunriseLabel.setValue("Sunrise: " + Utils.convertTime(sunrise));
-		
 		sunsetLabel.setValue("Sunset: " + Utils.convertTime(sunset));
 		
 		//add the activity button
 		showActivityButton.setIcon(VaadinIcons.CAR);
 		activityPromptLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+		//set click listener to show activity button
+		showActivityButton.setClickShortcut(KeyCode.ENTER);
 		activityPromptLayout.addComponent(showActivityButton);
 		
 		//add the elements to the main container that holds descriptions
@@ -436,12 +410,10 @@ public class MainView extends UI{
 	}
 	
 	private void updateActivityUI() {
-	    
-	    //testing
+		//remove the description layout to make room for the activity tabsheet
 	    mainLayout.removeComponent(mainDescriptionLayout);
-//	    mainDescriptionLayout.setVisible(disabled);
-	    //end testing
-	    
+
+	    //JSON array to hold all activities around the given location
 	    JSONArray activityResultsJSONArray = new JSONArray();
 	    try {
 	      int resultSize = Integer.parseInt(activeService.fetchActivityList(cityTextField.getValue()).get("total_results").toString());
@@ -458,86 +430,61 @@ public class MainView extends UI{
 	    String activityStartDate = null;
 	    String activityLogoImageURL = null;
 	    String activityName = null;
-	    ArrayList<String> list = new ArrayList<>();
 	    
-	    try {
-	      activityDescription = (activityResultsJSONArray.getJSONObject(0).getJSONArray("assetDescriptions").getJSONObject(0).get("description")).toString();
-	      activityURL = (activityResultsJSONArray.getJSONObject(0).get("homePageUrlAdr")).toString();
-	      activityLocation = (activityResultsJSONArray.getJSONObject(0).getJSONObject("place")).get("addressLine1Txt").toString();
-	      activityStartDate = (activityResultsJSONArray.getJSONObject(0).get("activityStartDate")).toString();
-	      activityLogoImageURL = (activityResultsJSONArray.getJSONObject(0).get("logoUrlAdr")).toString();
-	      activityName = ((activityResultsJSONArray.getJSONObject(0).get("assetName").toString()));
-	      list.add(activityDescription);
-	      list.add(activityURL);
-	      list.add(activityLocation);
-	      list.add(activityStartDate);
-	      list.add(activityLogoImageURL);
-	      list.add(activityName);
-	      Utils.printAll(list);
-	      
-	    } catch (JSONException e) {
-	      e.printStackTrace();
+	    //making the list of the first 5 activities
+	    ArrayList<Activity> activityList = new ArrayList<>();
+	    for(int i =0;i<=5;i++) {
+	        activityDescription = (activityResultsJSONArray.getJSONObject(i).getJSONArray("assetDescriptions").getJSONObject(0).get("description")).toString();
+		    activityURL = (activityResultsJSONArray.getJSONObject(i).get("homePageUrlAdr")).toString();
+		    activityLocation = (activityResultsJSONArray.getJSONObject(i).getJSONObject("place")).get("addressLine1Txt").toString();
+		    activityStartDate = (activityResultsJSONArray.getJSONObject(i).get("activityStartDate")).toString();
+		    activityLogoImageURL = (activityResultsJSONArray.getJSONObject(i).get("logoUrlAdr")).toString();
+		    activityName = ((activityResultsJSONArray.getJSONObject(i).get("assetName").toString()));
+		    
+		    Activity activity = new Activity(activityDescription, activityURL, activityLocation, activityStartDate, activityLogoImageURL,activityName);
+		    activityList.add(activity);
 	    }
 	    
-	    //testing
+	    //setting up the activity display layout
+	    mainLayout.removeComponent(activityDisplayLayout);//TODO change the code here when you start implementing page functionality
 	    activityDisplayLayout = new HorizontalLayout();
 	    activityDisplayLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
-	    //end testing
 	    
-	    Panel activityInfoPanel = new Panel(activityDescription);
-	    Panel activityInfoPanel1 = new Panel(Utils.lorem);
-	    Panel activityInfoPanel2 = new Panel(Utils.lorem);
+	    activityTabSheet = createActivityTabSheet(activityList);
+	    activityTabSheet.addStyleName( ValoTheme.TABSHEET_EQUAL_WIDTH_TABS);
 	    
-	    //test panel, try adding a textfield
-	    Label testLabel = new Label(activityDescription,ContentMode.HTML);
-//	    testLabel.setSizeUndefined();
-	    testLabel.setWidth("1000px");
-//	    testLabel.setHeight("300px");
-//	    testLabel.setValue(activityDescription);
-	   
-	    
-	    //testing Panel that holds a layout, the layout itself is then scrollable
-	    VerticalLayout testLayout = new VerticalLayout();
-	    testLayout.addComponent(testLabel);
-	    Panel testPanel2 = new Panel();
-	    testPanel2.setHeight("250px");
-	    System.out.println(Page.getCurrent().getBrowserWindowWidth());
-	    double browserPageWidth = Page.getCurrent().getBrowserWindowWidth();
-	    String panelWidth = Double.toString(browserPageWidth * .92);
-	    testPanel2.setWidth(panelWidth);
-	    
-	    testPanel2.setCaption("test2");
-	    testPanel2.setContent(testLayout);
-	    
-	    //end testPanel
-	    
-	    //testing
-	    ArrayList<Panel> panelList = new ArrayList<Panel>();
-	    panelList.add(activityInfoPanel);
-	    panelList.add(activityInfoPanel1);
-	    panelList.add(activityInfoPanel2);
-	    panelList.add(testPanel2);
-	    
-	    //testing
-	    TabSheet tabsheet = new TabSheet();
-	    tabsheet.addStyleName(ValoTheme.TABSHEET_EQUAL_WIDTH_TABS );
-	    int tabCounter = 0;
-	    
-	    for(Panel panel :panelList) {
-	      panel.addStyleName("animated slideInRight ");
-//	      panel.setWidth("100%");
-//	      panel.setHeight("100%");
-	      VerticalLayout tabToAdd = new VerticalLayout(panel);
-	      tabToAdd.setCaption("tab " + tabCounter++);
-	      tabsheet.addTab(tabToAdd);
-	    }
-
-	    activityDisplayLayout.addComponent(tabsheet);
-	    //end testing
-
+	    activityDisplayLayout.addComponent(activityTabSheet);
 	    activityDisplayLayout.setVisible(enabled);
+	    
 	    mainLayout.addComponent(activityDisplayLayout);
-	    //add a class to a component as if it were an HTML element
-	    activityInfoPanel.addStyleName("animated slideInRight");
 	  }
+	
+	//implements TabSheet creation
+	public TabSheet createActivityTabSheet(ArrayList<Activity> list) {
+		activityTabSheet = new TabSheet();
+		
+		for(Activity activity: list) {
+			activityLabel = new Label(activity.getDescription(),ContentMode.HTML);
+			activityLabel.setWidth("1000px");//TODO hard coded string
+			
+			activityTabSheetLayout = new VerticalLayout();
+			activityTabSheetLayout.addComponent(activityLabel);
+			
+			activityPanel = new Panel();
+			activityPanel.setHeight("250px");
+			activityPanel.addStyleName("animated slideInRight");//TODO hard coded string
+			
+			double browserPageWidth = Page.getCurrent().getBrowserWindowWidth();
+		    String panelWidth = Double.toString(browserPageWidth * .92);
+		    activityPanel.setWidth(panelWidth);
+		    activityPanel.setContent(activityTabSheetLayout);
+		    
+		    tab = new VerticalLayout(activityPanel);
+		    tab.setCaption(activity.getName());
+		    activityTabSheet.addTab(tab);
+		    
+		}
+		
+		return activityTabSheet;
+	}
 }

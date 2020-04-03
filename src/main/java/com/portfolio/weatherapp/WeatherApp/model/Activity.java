@@ -1,23 +1,62 @@
 package com.portfolio.weatherapp.WeatherApp.model;
 
 public class Activity {
-	private String description = null;
-	private String url = null;
-	private String location = null;
-	private String startDate = null;
-	private String logoImageURL = null;
+	private String description;
+	private String url;
+	private String location;
+	private String startDate;
+	private String logoImageURL;
+	private String name;
 	
+
 	
-	public Activity(String description, String url, String location, String startDate, String logoImageURL) {
+	public Activity() {
+		super();
+	}
+
+	public Activity(String description, String url, String location, String startDate, String logoImageURL,String name) {
 		super();
 		this.description = description;
 		this.url = url;
 		this.location = location;
 		this.startDate = startDate;
 		this.logoImageURL = logoImageURL;
+		this.name = name;
 	}
 	
 	
+//	@Override
+//	public String toString() {
+//		return "Activity [description=" + description + "\n" +  ", url=" + url + ", location=" + location + ", startDate="
+//				+ startDate + ", logoImageURL=" + logoImageURL + ", name=" + name + "]";
+//	}
+	
+	@Override
+	public String toString() {
+		return ", name=" + name + "]";
+	}
+
+
+	public String getUrl() {
+		return url;
+	}
+
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+
+	public String getName() {
+		return name;
+	}
+
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+
 	public String getDescription() {
 		return description;
 	}
