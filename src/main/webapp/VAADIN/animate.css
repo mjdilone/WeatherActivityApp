@@ -10,15 +10,9 @@
 
 
 /*Custom Added Styles*/
-/* .disappear { */
-/* 	display:none; */
-/* 	scale(0); */
-/* } */
-
 html{
 	  scroll-behavior: smooth;
 }
-
 
 .wallpaper {
 	background: url(cssImages/pretty-lake.jpg) cyan;

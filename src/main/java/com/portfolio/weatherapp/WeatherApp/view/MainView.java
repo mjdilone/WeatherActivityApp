@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,19 +13,15 @@ import com.portfolio.weatherapp.WeatherApp.controller.Utils;
 import com.portfolio.weatherapp.WeatherApp.controller.WeatherService;
 import com.portfolio.weatherapp.WeatherApp.model.Activity;
 import com.vaadin.annotations.StyleSheet;
-import com.vaadin.annotations.Theme;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.icons.VaadinIcons;
-import com.vaadin.navigator.Navigator;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
-import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
@@ -51,13 +46,7 @@ public class MainView extends UI{
 	
 	private boolean enabled = true;
 	private boolean disabled = false;
-	
-//	Navigator navigator;
-	
-	private String slideInUp = "animated slideInUp";
-	private String slideInUpSlow = "animated slideInUp";
-	private String slideOutUp = "animated slideOutUp";
-	
+
 	//weather elements
 	private Image iconImage;
 	private Image logoImage;
@@ -79,7 +68,6 @@ public class MainView extends UI{
 	
 	//activity elements
 	private Button showActivityButton;
-	private HorizontalLayout activityLayout;
 	private Label activityLabel;
 	
 	//verticalLayout elements go up and down
@@ -102,7 +90,6 @@ public class MainView extends UI{
 	private VerticalLayout activityTabSheetLayout;
 	private VerticalLayout tab;
 	private Panel activityPanel;
-//	private Label activityLabel;
 	
 	//init starts up the page with empty elements and then a listener waits for input
 	@Override
@@ -110,7 +97,6 @@ public class MainView extends UI{
 		topLayout = new VerticalLayout();
 		topLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 
-		
 		//sets up all widgets and componenets that will be used. In a way it creates nothing in the UI, but insantiates the widgets
 		//This avoids an issue where some elements will be null before they can be added since they're instantiated in other methodsh
 		setUpLayout();
@@ -124,26 +110,20 @@ public class MainView extends UI{
 		dashBoardTitle();
 		//adds empty containers for the dashboard, these will then be populated
 		dashBoardDescription();
-	
 
 		topLayout.setStyleName("animated slideInUp");
 		dashBoardMain.setStyleName("animated slideInUp");
 		mainDescriptionLayout.setStyleName("animated slideInUp");
-		showActivityButton.setStyleName(slideInUp);
+		showActivityButton.setStyleName(Constants.slideInUp);
 		
 		mainLayout.setStyleName("animated wallpaper ");		
 		mainLayout.setSizeFull();
-
-		
-		//testing adding bold to all elements
-		
-		//end testing
 		
 		//binds the click listener to the enter button
 		showWeatherButton.setClickShortcut(KeyCode.ENTER);
 		//this is a CLICK listener, so it's called with a click and then checks the value of cityTextField
 		showWeatherButton.addClickListener(event0 -> {
-			topLayout.setStyleName(slideOutUp);
+			topLayout.setStyleName(Constants.slideInUp);
 			refreshUI();
 		});
 		
@@ -153,16 +133,13 @@ public class MainView extends UI{
 				cityTextField.setValue(Constants.testWeatherCityInput);
 			}else {
 					mainLayout.removeComponent(topLayout);
-//					mainLayout.setSizeFull();
 					updateUI();
 			}
 		});
 	
 		showActivityButton.addClickListener(event -> {
-//			activityTabSheet = new TabSheet();
 			updateActivityUI();
 		    mainLayout.setExpandRatio(activityDisplayLayout,1.0f);
-			
 		});		
 	}
 	
@@ -225,7 +202,7 @@ public class MainView extends UI{
 		logoLayout = new HorizontalLayout();		
 		logoLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		
-		logoImage = new Image("",new FileResource(new File("src/main/resources/img/icons/77_Essential_Icons_Location Marker.png")));
+		logoImage = new Image("",new FileResource(new File(Constants.locationMarkerFileLocation)));
 		logoLayout.addComponent(logoImage);
 
 		topLayout.addComponent(logoLayout);
@@ -236,7 +213,7 @@ public class MainView extends UI{
 		formLayout = new HorizontalLayout();
 		formLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		formLayout.setSpacing(enabled);
-		//formLayout.setMargin(enabled);
+		formLayout.setMargin(enabled);
 		
 		//create the selection component that will allow you to pick between C and F
 		unitSelect = new NativeSelect<>();
@@ -255,7 +232,6 @@ public class MainView extends UI{
 		formLayout.addComponent(unitSelect);
 		
 		//add textField
-		//creates a nice Vaadin text field
 		cityTextField = new TextField();
 		cityTextField.setWidth("40%");
 		formLayout.addComponents(cityTextField);
@@ -267,13 +243,9 @@ public class MainView extends UI{
 		
 		topLayout.addComponent(formLayout);
 		mainLayout.addComponents(topLayout);
-		
-		
-
 	}
 	
 	private void dashBoardTitle() {
-		
 		dashBoardMain = new HorizontalLayout();
 		dashBoardMain.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
 		
@@ -312,7 +284,6 @@ public class MainView extends UI{
 		refreshUI();
 		updateWeatherUI();
 	}
-	
 	
 	private void refreshUI() {
 		//empty for now
@@ -495,17 +466,13 @@ public class MainView extends UI{
 			activityPanel.setHeight("250px");
 			activityPanel.addStyleName("animated slideInRight");//TODO hard coded string
 			
-			double browserPageWidth = Page.getCurrent().getBrowserWindowWidth();
-		    String panelWidth = Double.toString(browserPageWidth * .92);
-		    activityPanel.setWidth(panelWidth);
+		    activityPanel.setWidth(Constants.getPanelWidth());
 		    activityPanel.setContent(activityTabSheetLayout);
 		    
 		    tab = new VerticalLayout(activityPanel);
 		    tab.setCaption(activity.getName());
 		    activityTabSheet.addTab(tab);
-		    
 		}
-		
 		return activityTabSheet;
 	}
 }

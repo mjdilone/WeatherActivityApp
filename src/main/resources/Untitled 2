@@ -1,0 +1,125 @@
+{
+  "response_code": 0,
+  "results": [
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "Who starred as Bruce Wayne and Batman in Tim Burton&#039;s 1989 movie &quot;Batman&quot;?",
+      "correct_answer": "Michael Keaton",
+      "incorrect_answers": [
+        "George Clooney",
+        "Val Kilmer",
+        "Adam West"
+      ]
+    },
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "What was the title of the first Bond movie, released in 1962?",
+      "correct_answer": "Dr. No",
+      "incorrect_answers": [
+        "From Russia with Love",
+        "Goldfinger",
+        "Thunderball"
+      ]
+    },
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "Who plays Alice in the Resident Evil movies?",
+      "correct_answer": "Milla Jovovich",
+      "incorrect_answers": [
+        "Madison Derpe",
+        "Milla Johnson",
+        "Kim Demp"
+      ]
+    },
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "In the movie &quot;Cast Away&quot; the main protagonist&#039;s best friend while on the island is named",
+      "correct_answer": "Wilson",
+      "incorrect_answers": [
+        "Carson",
+        "Jackson",
+        "Willy"
+      ]
+    },
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "The 2002 film &quot;28 Days Later&quot; is mainly set in which European country?",
+      "correct_answer": "United Kingdom",
+      "incorrect_answers": [
+        "France",
+        "Italy",
+        "Germany"
+      ]
+    },
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "In the movie &quot;Spaceballs&quot;, what are the Spaceballs attempting to steal from Planet Druidia?",
+      "correct_answer": "Air",
+      "incorrect_answers": [
+        "The Schwartz",
+        "Princess Lonestar",
+        "Meatballs"
+      ]
+    },
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "When does &quot;Rogue One: A Star Wars Story&quot; take place chronologically in the series?",
+      "correct_answer": "Between Episode 3 and 4",
+      "incorrect_answers": [
+        "After Episode 6",
+        "Before Episode 1",
+        "Between Episode 4 and 5"
+      ]
+    },
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "In the 1992 film &quot;Army of Darkness&quot;, what name does Ash give to his double-barreled shotgun?",
+      "correct_answer": "Boomstick",
+      "incorrect_answers": [
+        "Bloomstick",
+        "Blastbranch",
+        "2-Pump Chump"
+      ]
+    },
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "At the end of the 2001 film &quot;Rat Race&quot;, whose concert do the contestants crash?",
+      "correct_answer": "Smash Mouth",
+      "incorrect_answers": [
+        "Bowling for Soup",
+        "Sum 41",
+        "Linkin Park"
+      ]
+    },
+    {
+      "category": "Entertainment: Film",
+      "type": "multiple",
+      "difficulty": "easy",
+      "question": "Who directed the Kill Bill movies?",
+      "correct_answer": "Quentin Tarantino",
+      "incorrect_answers": [
+        "Arnold Schwarzenegger",
+        "David Lean",
+        "Stanley Kubrick"
+      ]
+    }
+  ]
+}
