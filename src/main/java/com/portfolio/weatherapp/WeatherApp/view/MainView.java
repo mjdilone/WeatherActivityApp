@@ -17,6 +17,7 @@ import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
+import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.spring.annotation.SpringUI;
@@ -91,6 +92,9 @@ public class MainView extends UI{
 	private VerticalLayout tab;
 	private Panel activityPanel;
 	
+	//error handlers
+	private Button errorButton;
+	private Label errorLabel;
 	//init starts up the page with empty elements and then a listener waits for input
 	@Override
 	protected void init(VaadinRequest request) {
@@ -138,9 +142,27 @@ public class MainView extends UI{
 		});
 	
 		showActivityButton.addClickListener(event -> {
-			updateActivityUI();
-		    mainLayout.setExpandRatio(activityDisplayLayout,1.0f);
+			try {
+				updateActivityUI();
+			    mainLayout.setExpandRatio(activityDisplayLayout,1.0f);
+			} catch (Exception e) {
+				handleError();
+			}
 		});		
+	}
+	
+	public void handleError() {
+		if(errorLabel != null && errorButton != null) {
+			mainLayout.removeComponent(errorLabel);
+			mainLayout.removeComponent(errorButton);
+		}
+		errorLabel = new Label("There are no activities taking place near your area at this time");
+		errorLabel.addStyleName(ValoTheme.LABEL_BOLD);
+		errorButton = new Button("Back to Weather Search");
+		errorButton.addClickListener(errorEvent -> {
+			Page.getCurrent().reload();
+		});
+		mainLayout.addComponents(errorLabel,errorButton);
 	}
 	
 	public MainView() {
@@ -189,6 +211,8 @@ public class MainView extends UI{
 		title.addStyleName(ValoTheme.LABEL_H1);
 		title.addStyleName(ValoTheme.LABEL_BOLD);
 		title.addStyleName(ValoTheme.LABEL_COLORED);
+		
+		
 		
 		//adding the title to the headerlayout, which is the surrounding container
 		headerLayout.addComponents(title);
