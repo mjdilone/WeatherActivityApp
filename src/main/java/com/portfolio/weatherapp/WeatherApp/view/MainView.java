@@ -19,7 +19,9 @@ import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.Position;
 import com.vaadin.shared.ui.ContentMode;
+import com.vaadin.shared.ui.ui.NotificationRole;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -27,11 +29,13 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeSelect;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
 @SpringUI(path = "")
@@ -95,6 +99,11 @@ public class MainView extends UI{
 	//error handlers
 	private Button errorButton;
 	private Label errorLabel;
+	
+	//notifications
+	private Notification tutorialNotification;
+	
+	
 	//init starts up the page with empty elements and then a listener waits for input
 	@Override
 	protected void init(VaadinRequest request) {
@@ -138,6 +147,7 @@ public class MainView extends UI{
 			}else {
 					mainLayout.removeComponent(topLayout);
 					updateUI();
+					displayActivityTutorial();
 			}
 		});
 	
@@ -148,9 +158,28 @@ public class MainView extends UI{
 			} catch (Exception e) {
 				handleError();
 			}
-		});		
+		});	
+		
+		displayWeatherTutorial();
+		
 	}
 	
+	private void displayWeatherTutorial() {
+		tutorialNotification = new Notification("Enter a city to search below, only the city name is needed.");
+		tutorialNotification.setPosition(Position.TOP_LEFT);
+		tutorialNotification.show(getPage());
+		tutorialNotification.setDelayMsec(3000);
+		
+	}
+	
+	private void displayActivityTutorial() {
+		tutorialNotification = new Notification("Click the car button to find Activities nearby");
+		tutorialNotification.setPosition(Position.TOP_LEFT);
+		tutorialNotification.show(getPage());
+		tutorialNotification.setDelayMsec(3000);
+		
+	}
+
 	public void handleError() {
 		if(errorLabel != null && errorButton != null) {
 			mainLayout.removeComponent(errorLabel);
