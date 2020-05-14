@@ -223,7 +223,7 @@ public class MainView extends UI{
 	}
 
 	private void displayWeatherTutorial() {
-		tutorialNotification = new Notification("Enter a city to search below, only the city name is needed.\nOr simply press Enter to use a built-in test value.");
+		tutorialNotification = new Notification("Enter a city to search below, only the city name is needed.\nOr press Enter to use a built-in test value.");
 		tutorialNotification.setPosition(Position.TOP_LEFT);
 		tutorialNotification.show(getPage());
 		tutorialNotification.setDelayMsec(3000);
@@ -584,15 +584,20 @@ public class MainView extends UI{
 //	    if (isFirstActivitySetUp) {
 	    	activityPromptLayout.removeComponent(showActivityButton);
 	    	activityPromptLayout.addComponent(prevActivityButton);
+	    	activityPageCounterLabel.setValue(("Page " + (activityPageCounter + Constants.activityTabSheetSize)/Constants.activityTabSheetSize)+ "/" +(Constants.apiResultsLimit/Constants.activityTabSheetSize));
+			activityPageCounterLabel.addStyleName(ValoTheme.LABEL_BOLD);
+			activityPageCounterLabel.addStyleName(ValoTheme.LABEL_LARGE);
+	    	activityPromptLayout.addComponent(activityPageCounterLabel);
 	    	activityPromptLayout.addComponent(nextActivityButton);
 	    	activityPromptLayout.addComponent(goBackToWeatherButton);
 	    	
 //	    	isFirstActivitySetUp = !isFirstActivitySetUp;
 //		}
 	    
-//		activityPageCounterLabel.setCaption((activityPageCounter/(Constants.activityTabSheetSize - 1)+1 ) + "/" + Constants.activityTabSheetSize);
-		activityPageCounterLabel.setCaption(((activityPageCounter + Constants.activityTabSheetSize)/Constants.activityTabSheetSize)+ "/" +(Constants.apiResultsLimit/Constants.activityTabSheetSize));
-    	activityPromptLayout.addComponent(activityPageCounterLabel);
+//		activityPageCounterLabel.setCaption();
+    			
+		
+		
 	    
 	    activityDisplayLayout.addComponent(activityTabSheet);
 	  
