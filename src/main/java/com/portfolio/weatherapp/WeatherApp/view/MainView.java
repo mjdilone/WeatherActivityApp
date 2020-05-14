@@ -223,7 +223,7 @@ public class MainView extends UI{
 	}
 
 	private void displayWeatherTutorial() {
-		tutorialNotification = new Notification("Enter a city to search below, only the city name is needed.");
+		tutorialNotification = new Notification("Enter a city to search below, only the city name is needed.\nOr simply press Enter to use a built-in test value.");
 		tutorialNotification.setPosition(Position.TOP_LEFT);
 		tutorialNotification.show(getPage());
 		tutorialNotification.setDelayMsec(3000);
