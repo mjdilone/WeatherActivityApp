@@ -4,6 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
+import com.vaadin.ui.Button;
+
 public class Utils {
 
 	public static String convertTime(long time) {
@@ -28,4 +30,5 @@ public class Utils {
 			+ "voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
 			+ "Excepteur sint occaecat cupidatat non proident, sunt in "
 			+ "culpa qui officia deserunt mollit anim id est laborum.";
+
 }

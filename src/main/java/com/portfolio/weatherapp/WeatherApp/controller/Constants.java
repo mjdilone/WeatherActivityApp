@@ -1,6 +1,7 @@
 package com.portfolio.weatherapp.WeatherApp.controller;
 
 import com.vaadin.server.Page;
+import com.vaadin.ui.Component;
 
 public class Constants {
 	public static final String activityAPIKey = "uj38sx9s6xzvvksbxyutgqh6";
@@ -13,6 +14,11 @@ public class Constants {
 	public static final String slideInUp = "animated slideInUp";
 	public static final String slideOutUp = "animated slideOutUp";
 	
+	public static final int apiResultsLimit = 25;
+	public static final int activityTabSheetSize = 5;
+
+	public static String activityPanelHeight = "290px";
+	
 	public static String getPanelWidth(double browserPageWidth) {
 		double panelWidth = browserPageWidth * .92;
 		return Double.toString(panelWidth);
@@ -21,5 +27,9 @@ public class Constants {
 	public static String getPanelWidth() {
 		double browserPageWidth = Page.getCurrent().getBrowserWindowWidth();
 		return Double.toString(browserPageWidth * .92);
+	}
+
+	public static void shakeVaadinComponent(Component componentToShake) {
+		componentToShake.addStyleName("animated shake");
 	}
 }

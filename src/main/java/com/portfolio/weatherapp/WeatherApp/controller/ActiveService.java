@@ -46,8 +46,8 @@ public class ActiveService {
 		"&radius=15&api_key=" + 
 		Constants.activityAPIKey;
 		
-		log.info("Activity API URL " + callUrl);
-		System.out.println(callUrl);
+//		log.info("Activity API URL " + callUrl);
+//		System.out.println(callUrl);
 		Request request = new Request.Builder().url(callUrl).build();
 		
 		try {

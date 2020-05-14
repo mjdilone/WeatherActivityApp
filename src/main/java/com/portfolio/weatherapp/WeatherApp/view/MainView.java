@@ -21,10 +21,10 @@ import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.Position;
 import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.shared.ui.ui.NotificationRole;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
@@ -35,11 +35,11 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
 @SpringUI(path = "")
 @StyleSheet("vaadin://animate.css")
+@StyleSheet("vaadin://weather.css")
 public class MainView extends UI{
 	private static final long serialVersionUID = 1L;
 
@@ -49,8 +49,11 @@ public class MainView extends UI{
 	@Autowired 
 	ActiveService activeService;
 	
+	private int activityPageCounter = 0;
+	
 	private boolean enabled = true;
 	private boolean disabled = false;
+	private boolean isFirstActivitySetUp = true;
 
 	//weather elements
 	private Image iconImage;
@@ -59,6 +62,7 @@ public class MainView extends UI{
 	private NativeSelect<String> unitSelect;
 	private TextField cityTextField;
 	private Button showWeatherButton;
+	private Button goBackToWeatherButton; 
 	
 	private Label currentLocationTitle;
 	private Label currentTemp;
@@ -73,13 +77,21 @@ public class MainView extends UI{
 	
 	//activity elements
 	private Button showActivityButton;
+	private Button nextActivityButton;
+	private Button prevActivityButton;
 	private Label activityLabel;
+	private Label activityPageCounterLabel;
+	
+	private HorizontalLayout sequentialButtonsLayout;
+	
 	
 	//verticalLayout elements go up and down
 	private VerticalLayout mainLayout;
 	private VerticalLayout descriptionLayout;
 	private VerticalLayout pressureLayout;
-	private VerticalLayout activityPromptLayout;
+	private HorizontalLayout activityPromptLayout;
+
+	
 
 	//horizontal elements go left to right
 	private HorizontalLayout formLayout;
@@ -102,6 +114,9 @@ public class MainView extends UI{
 	
 	//notifications
 	private Notification tutorialNotification;
+	
+	//activity json results array
+	private JSONArray activityResultsJSONArray;
 	
 	
 	//init starts up the page with empty elements and then a listener waits for input
@@ -126,6 +141,7 @@ public class MainView extends UI{
 
 		topLayout.setStyleName("animated slideInUp");
 		dashBoardMain.setStyleName("animated slideInUp");
+		
 		mainDescriptionLayout.setStyleName("animated slideInUp");
 		showActivityButton.setStyleName(Constants.slideInUp);
 		
@@ -135,12 +151,12 @@ public class MainView extends UI{
 		//binds the click listener to the enter button
 		showWeatherButton.setClickShortcut(KeyCode.ENTER);
 		//this is a CLICK listener, so it's called with a click and then checks the value of cityTextField
-		showWeatherButton.addClickListener(event0 -> {
+		showWeatherButton.addClickListener(showWeatherEvent -> {
 			topLayout.setStyleName(Constants.slideInUp);
 			refreshUI();
 		});
 		
-		showWeatherButton.addClickListener(event1 -> {
+		showWeatherButton.addClickListener(showWeatherEvent -> {
 			if(cityTextField.getValue().equals("") ) {
 				//Notification.show("Please enter a city");
 				cityTextField.setValue(Constants.testWeatherCityInput);
@@ -151,19 +167,61 @@ public class MainView extends UI{
 			}
 		});
 	
-		showActivityButton.addClickListener(event -> {
+		showActivityButton.addClickListener(showActivityEvent -> {
 			try {
 				updateActivityUI();
-			    mainLayout.setExpandRatio(activityDisplayLayout,1.0f);
+			    mainLayout.setExpandRatio(activityDisplayLayout,0.5f);
 			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				System.out.println("error has been handled");
 				handleError();
 			}
 		});	
 		
-		displayWeatherTutorial();
+		nextActivityButton.addClickListener(eventNextActivity -> {
+			if(nextActivityButton.getStyleName().contains("animated shake")) {
+				nextActivityButton.setStyleName("");
+			}
+			if(activityPageCounter < (Constants.apiResultsLimit - Constants.activityTabSheetSize) ) {
+				activityPageCounter = activityPageCounter + (Constants.activityTabSheetSize  );
+				System.out.println("page counter " + activityPageCounter);
+				updateActivityUI();
+				mainLayout.setExpandRatio(activityDisplayLayout,0.5f);
+			}else  {
+				displayLimitMessage();
+				nextActivityButton.addStyleName("animated shake");	
+			}
+		});
 		
+		prevActivityButton.addClickListener(eventPrevActivity -> {
+			if(nextActivityButton.getStyleName().contains("animated shake")) {
+				nextActivityButton.setStyleName("");
+			}
+			if(activityPageCounter > 0) {
+				activityPageCounter = activityPageCounter - Constants.activityTabSheetSize;
+				System.out.println("page counter " + activityPageCounter);
+				updateActivityUI();
+				mainLayout.setExpandRatio(activityDisplayLayout,0.5f);
+			}else {
+				displayLimitMessage();
+				prevActivityButton.addStyleName("animated shake");	
+			}
+		});
+		
+		goBackToWeatherButton.addClickListener(eventBackToWeather -> {
+			this.init(request);
+		});
+		
+		displayWeatherTutorial();
 	}
 	
+	private void displayLimitMessage() {
+		tutorialNotification = new Notification("No further results available");
+		tutorialNotification.setPosition(Position.TOP_LEFT);
+		tutorialNotification.show(getPage());
+		tutorialNotification.setDelayMsec(3000);
+	}
+
 	private void displayWeatherTutorial() {
 		tutorialNotification = new Notification("Enter a city to search below, only the city name is needed.");
 		tutorialNotification.setPosition(Position.TOP_LEFT);
@@ -204,7 +262,7 @@ public class MainView extends UI{
 		mainDescriptionLayout = new HorizontalLayout();
 		descriptionLayout = new VerticalLayout();
 		pressureLayout = new VerticalLayout();
-		activityPromptLayout = new VerticalLayout();
+		activityPromptLayout = new HorizontalLayout();
 
 		//weather
 		weatherDescription = new Label();
@@ -220,6 +278,10 @@ public class MainView extends UI{
 		showActivityButton = new Button();
 	    activityDisplayLayout = new HorizontalLayout();
 	    activityTabSheet = new TabSheet();
+	    nextActivityButton = new Button();
+	    prevActivityButton = new Button();
+	    activityPageCounterLabel = new Label();
+	    goBackToWeatherButton = new Button();
 		
 		//mainLayout 
 		mainLayout = new VerticalLayout();
@@ -240,8 +302,6 @@ public class MainView extends UI{
 		title.addStyleName(ValoTheme.LABEL_H1);
 		title.addStyleName(ValoTheme.LABEL_BOLD);
 		title.addStyleName(ValoTheme.LABEL_COLORED);
-		
-		
 		
 		//adding the title to the headerlayout, which is the surrounding container
 		headerLayout.addComponents(title);
@@ -301,6 +361,7 @@ public class MainView extends UI{
 	private void dashBoardTitle() {
 		dashBoardMain = new HorizontalLayout();
 		dashBoardMain.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+		dashBoardMain.setSpacing(disabled);
 		
 		currentLocationTitle = new Label();
 		currentLocationTitle.addStyleName(ValoTheme.LABEL_H2);
@@ -420,6 +481,10 @@ public class MainView extends UI{
 		//create an embedded version of the image, passing null as it's caption
 		iconImage.setSource(new ExternalResource("http://openweathermap.org/img/w/" + iconCode +  ".png"));
 
+//		dashBoardMain.setHeight("100px");
+		dashBoardMain.addStyleName("dashBoardMain test");
+		currentLocationTitle.addStyleName("dashBoardMain");
+		dashBoardMain.setMargin(disabled);
 		dashBoardMain.addComponents(currentLocationTitle,iconImage,currentTemp);
 		mainLayout.addComponent(dashBoardMain);
 		
@@ -441,13 +506,21 @@ public class MainView extends UI{
 		sunsetLabel.setValue("Sunset: " + Utils.convertTime(sunset));
 		sunsetLabel.addStyleName("animated bold");
 		
-		//add the activity button
+		//add the activity buttons
 		showActivityButton.setIcon(VaadinIcons.CAR);
+		nextActivityButton.setIcon(VaadinIcons.ANGLE_DOUBLE_RIGHT);
+		prevActivityButton.setIcon(VaadinIcons.ANGLE_DOUBLE_LEFT);
+		goBackToWeatherButton.setIcon(VaadinIcons.REFRESH);
+		
+		
 		activityPromptLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+		activityPromptLayout.setMargin(disabled);
+		
+		
 		//set click listener to show activity button
 		showActivityButton.setClickShortcut(KeyCode.ENTER);
 		activityPromptLayout.addComponent(showActivityButton);
-		
+//		activityPromptLayout.setHeight("80%");
 		//add the elements to the main container that holds descriptions
 		mainDescriptionLayout.addComponents(descriptionLayout,pressureLayout);
 		//adds the description to the main container that holds anything
@@ -455,19 +528,22 @@ public class MainView extends UI{
 	}
 	
 	private void updateActivityUI() {
-		//remove the description layout to make room for the activity tabsheet
+		//remove the description layout to make room for the activity tabsheet, can possibly make better
 	    mainLayout.removeComponent(mainDescriptionLayout);
-
+	    
 	    //JSON array to hold all activities around the given location
-	    JSONArray activityResultsJSONArray = new JSONArray();
-	    try {
-	      int resultSize = Integer.parseInt(activeService.fetchActivityList(cityTextField.getValue()).get("total_results").toString());
-	      System.out.println("Result Size: " + resultSize);
-	      activityResultsJSONArray = activeService.fetchActivityList(cityTextField.getValue()).getJSONArray("results");
-	    } catch (Exception e) {
-	      System.out.println("fetching the activity list has failed");
-	      System.out.println(e.getMessage());
+	    if(activityResultsJSONArray == null) {
+	    	 activityResultsJSONArray = new JSONArray();
+	 	    try {
+	 	      int resultSize = Integer.parseInt(activeService.fetchActivityList(cityTextField.getValue()).get("total_results").toString());
+//	 	      System.out.println("Result Size: " + resultSize);
+	 	      activityResultsJSONArray = activeService.fetchActivityList(cityTextField.getValue()).getJSONArray("results");
+	 	    } catch (Exception e) {
+	 	      System.out.println("fetching the activity list has failed");
+	 	      System.out.println(e.getMessage());
+	 	    }
 	    }
+	   
 
 	    String activityDescription = null;
 	    String activityURL = null;
@@ -476,9 +552,12 @@ public class MainView extends UI{
 	    String activityLogoImageURL = null;
 	    String activityName = null;
 	    
-	    //making the list of the first 5 activities
-	    ArrayList<Activity> activityList = new ArrayList<>();
-	    for(int i =0;i<=5;i++) {
+	    
+	    //making the list of  activities
+	    
+	    ArrayList<Activity> activityTabSheetList = new ArrayList<>();
+	    for(int i=activityPageCounter;i<=activityPageCounter+4;i++) {
+	    	System.out.println("i = " + i);
 	        activityDescription = (activityResultsJSONArray.getJSONObject(i).getJSONArray("assetDescriptions").getJSONObject(0).get("description")).toString();
 		    activityURL = (activityResultsJSONArray.getJSONObject(i).get("homePageUrlAdr")).toString();
 		    activityLocation = (activityResultsJSONArray.getJSONObject(i).getJSONObject("place")).get("addressLine1Txt").toString();
@@ -487,18 +566,36 @@ public class MainView extends UI{
 		    activityName = ((activityResultsJSONArray.getJSONObject(i).get("assetName").toString()));
 		    
 		    Activity activity = new Activity(activityDescription, activityURL, activityLocation, activityStartDate, activityLogoImageURL,activityName);
-		    activityList.add(activity);
+		    activityTabSheetList.add(activity);
 	    }
 	    
 	    //setting up the activity display layout
 	    mainLayout.removeComponent(activityDisplayLayout);//TODO change the code here when you start implementing page functionality
 	    activityDisplayLayout = new HorizontalLayout();
 	    activityDisplayLayout.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+	    activityDisplayLayout.setHeight("78%");
 	    
-	    activityTabSheet = createActivityTabSheet(activityList);
+	    
+	    activityTabSheet = createActivityTabSheet(activityTabSheetList);
 	    activityTabSheet.addStyleName( ValoTheme.TABSHEET_EQUAL_WIDTH_TABS);
 	    
+	    
+	    //TODO adding the button to the prompt layout puts it right under the show button, make this boolean logic better
+//	    if (isFirstActivitySetUp) {
+	    	activityPromptLayout.removeComponent(showActivityButton);
+	    	activityPromptLayout.addComponent(prevActivityButton);
+	    	activityPromptLayout.addComponent(nextActivityButton);
+	    	activityPromptLayout.addComponent(goBackToWeatherButton);
+	    	
+//	    	isFirstActivitySetUp = !isFirstActivitySetUp;
+//		}
+	    
+//		activityPageCounterLabel.setCaption((activityPageCounter/(Constants.activityTabSheetSize - 1)+1 ) + "/" + Constants.activityTabSheetSize);
+		activityPageCounterLabel.setCaption(((activityPageCounter + Constants.activityTabSheetSize)/Constants.activityTabSheetSize)+ "/" +(Constants.apiResultsLimit/Constants.activityTabSheetSize));
+    	activityPromptLayout.addComponent(activityPageCounterLabel);
+	    
 	    activityDisplayLayout.addComponent(activityTabSheet);
+	  
 	    activityDisplayLayout.setVisible(enabled);
 	    
 	    mainLayout.addComponent(activityDisplayLayout);
@@ -506,6 +603,8 @@ public class MainView extends UI{
 	
 	//implements TabSheet creation
 	public TabSheet createActivityTabSheet(ArrayList<Activity> list) {
+		//incrementing the page counter so that it's offset for the next page of results
+		
 		activityTabSheet = new TabSheet();
 		
 		for(Activity activity: list) {
@@ -516,7 +615,7 @@ public class MainView extends UI{
 			activityTabSheetLayout.addComponent(activityLabel);
 			
 			activityPanel = new Panel();
-			activityPanel.setHeight("250px");
+			activityPanel.setHeight(Constants.activityPanelHeight);
 			activityPanel.addStyleName("animated slideInRight");//TODO hard coded string
 			
 		    activityPanel.setWidth(Constants.getPanelWidth());
