@@ -15,6 +15,7 @@ import com.portfolio.weatherapp.WeatherApp.model.Activity;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.icons.VaadinIcons;
+import com.vaadin.navigator.View;
 import com.vaadin.server.ExternalResource;
 import com.vaadin.server.FileResource;
 import com.vaadin.server.Page;
@@ -22,6 +23,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.Position;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.spring.annotation.SpringViewDisplay;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
@@ -40,7 +42,7 @@ import com.vaadin.ui.themes.ValoTheme;
 @SpringUI(path = "")
 @StyleSheet("vaadin://animate.css")
 @StyleSheet("vaadin://weather.css")
-public class MainView extends UI{
+public class MainView extends UI implements View{
 	private static final long serialVersionUID = 1L;
 
 	@Autowired
@@ -163,12 +165,15 @@ public class MainView extends UI{
 			}else {
 					mainLayout.removeComponent(topLayout);
 					updateUI();
+					tutorialNotification.close();
 					displayActivityTutorial();
 			}
 		});
 	
 		showActivityButton.addClickListener(showActivityEvent -> {
 			try {
+				tutorialNotification.close();
+				displayActivityTabsheetTutorial();
 				updateActivityUI();
 			    mainLayout.setExpandRatio(activityDisplayLayout,0.5f);
 			} catch (Exception e) {
@@ -215,18 +220,26 @@ public class MainView extends UI{
 		displayWeatherTutorial();
 	}
 	
+	private void displayActivityTabsheetTutorial() {
+		tutorialNotification = new Notification("Browse results of activities near your search area \n Or click refresh to start over");
+		tutorialNotification.setPosition(Position.TOP_LEFT);
+		tutorialNotification.show(getPage());
+		tutorialNotification.setDelayMsec(5000);
+	}
+
 	private void displayLimitMessage() {
 		tutorialNotification = new Notification("No further results available");
 		tutorialNotification.setPosition(Position.TOP_LEFT);
 		tutorialNotification.show(getPage());
-		tutorialNotification.setDelayMsec(3000);
+		tutorialNotification.setDelayMsec(5000);
 	}
 
 	private void displayWeatherTutorial() {
 		tutorialNotification = new Notification("Enter a city to search below, only the city name is needed.\nOr press Enter to use a built-in test value.");
 		tutorialNotification.setPosition(Position.TOP_LEFT);
 		tutorialNotification.show(getPage());
-		tutorialNotification.setDelayMsec(3000);
+		tutorialNotification.setDelayMsec(5000);
+		
 		
 	}
 	
@@ -234,7 +247,7 @@ public class MainView extends UI{
 		tutorialNotification = new Notification("Click the car button to find Activities nearby");
 		tutorialNotification.setPosition(Position.TOP_LEFT);
 		tutorialNotification.show(getPage());
-		tutorialNotification.setDelayMsec(3000);
+		tutorialNotification.setDelayMsec(5000);
 		
 	}
 
@@ -330,7 +343,7 @@ public class MainView extends UI{
 		
 		//create the selection component that will allow you to pick between C and F
 		unitSelect = new NativeSelect<>();
-		unitSelect.setWidth("30px");
+//		unitSelect.setWidth("30px");
 		
 		//creating an ordinary array list that holds the elements 
 		ArrayList<String> items = new ArrayList<>();
